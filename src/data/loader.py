@@ -381,7 +381,18 @@ def _friendly_error(prefix: str, exc: Exception) -> str:
     return f"{prefix}{hint}\n\nTechnical detail: {raw}"
 
 
-# Default source used by the app. Swap this for an OpenF1 source in future.
+# Default source used by the app (FastF1 historical replay).
 def default_source() -> SessionDataSource:
     """Return the default data source (FastF1 historical replay)."""
     return FastF1DataSource()
+
+
+def live_source() -> SessionDataSource:
+    """Return the near-live OpenF1 data source.
+
+    Imported lazily so that importing :mod:`data.loader` (for tests, linting, or
+    the analysis layer) never pulls in the OpenF1 module until it is needed.
+    """
+    from .openf1_source import OpenF1DataSource
+
+    return OpenF1DataSource()

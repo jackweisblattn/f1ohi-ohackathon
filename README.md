@@ -31,8 +31,41 @@ who gained places, who is managing tires, and how two drivers compare on a lap.
 
 - **Python 3.11**
 - **[FastF1](https://docs.fastf1.dev)** for lap timing, car telemetry, X/Y
-  position, tire and results data.
+  position, tire and results data (Replay mode).
+- **[OpenF1](https://openf1.org)** (`https://api.openf1.org/v1`), a free,
+  no-auth REST API, for **near-live** car positions and standings (Live mode).
+  Accessed with the Python standard library (`urllib`), so it adds **no new
+  dependency**.
 - **Streamlit + Plotly** for the animated, interactive UI.
+
+## Live mode (OpenF1)
+
+The sidebar has a **Mode** toggle:
+
+- **Replay (FastF1)** — the original behaviour: pick a completed session and
+  play it back with full stats, tire degradation and telemetry.
+- **Live (OpenF1)** — follows the **current or most recent** session in
+  near-real-time. It polls OpenF1 every ~3 seconds for the latest car position
+  per driver and moves the dots on a track outline that fills in as the cars
+  run. Best-effort live **standings and gaps** are shown alongside the map.
+
+What to know about Live mode:
+
+- **It is near-live, not instant.** OpenF1 is roughly **3 seconds behind** the
+  track. For this project that delay is fine.
+- **It only shows data while a session is actually running ("green").** OpenF1
+  streams car locations only when cars are on track. If **no session is live**,
+  Live mode shows a clear message (not a blank screen) and keeps polling so it
+  lights up the instant a session starts.
+- **Demo guidance:** if you are demoing when **no session is live** (e.g. a
+  quiet Sunday morning), use **Replay (FastF1)** to play back a completed race.
+  Switch to Live during an actual session.
+- Detailed lap/tire/telemetry stats need FastF1 and are therefore **Replay-only**.
+  In Live mode the panel degrades gracefully to driver identity + live
+  standings rather than crashing.
+
+Live mode needs a working internet connection and does not use the FastF1
+cache. It targets the latest session via OpenF1's `session_key=latest`.
 
 ## Install
 
@@ -90,6 +123,7 @@ f1-pitwall/
 │   ├── app.py               # Streamlit UI (map, scrubber, driver panel)
 │   ├── data/
 │   │   ├── loader.py        # swappable data source + FastF1 implementation
+│   │   ├── openf1_source.py # OpenF1 near-live data source (same interface)
 │   │   └── analysis.py      # lap times, position change, tire degradation
 │   └── viz/
 │       └── track_map.py     # circuit outline + animated car dots (Plotly)
@@ -99,13 +133,20 @@ f1-pitwall/
 
 ## Swappable data layer & future OpenF1 live mode
 
-The UI never talks to FastF1 directly. It depends only on the abstract
+The UI never talks to a data provider directly. It depends only on the abstract
 `SessionDataSource` interface in `src/data/loader.py`, which returns plain
-dataclasses (`SessionData`, `DriverInfo`). Today the only implementation is
-`FastF1DataSource` (historical replay). A future **OpenF1** near-live source can
-implement the same interface and be dropped in via `default_source()` without
-changing any UI or visualisation code — the animation, stats panel and
-telemetry views would then work against near-live data unchanged.
+dataclasses (`SessionData`, `DriverInfo`). There are two implementations:
+
+- `FastF1DataSource` (historical replay), via `default_source()`.
+- `OpenF1DataSource` (near-live), in `src/data/openf1_source.py`, via
+  `live_source()`.
+
+Because both return the **same** `SessionData`, the animation (`track_map.py`)
+and the stats panel work against either source without structural changes. The
+OpenF1 source builds the shared time axis, resamples each driver's X/Y onto it,
+derives the track outline from the densest location trace, and maps
+`driver_number -> name_acronym` abbreviations and `#`-prefixed `team_colour`
+exactly the way the FastF1 source does.
 
 ## Development
 

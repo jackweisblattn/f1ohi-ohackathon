@@ -3,3 +3,6 @@ streamlit>=1.37.0
 plotly>=5.22.0
 pandas>=2.0.0
 numpy>=1.24.0
+
+# Live mode (OpenF1) uses only the Python standard library (urllib), so it
+# intentionally adds no third-party HTTP dependency here.
