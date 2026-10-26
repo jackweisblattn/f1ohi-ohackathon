@@ -1,8 +1,7 @@
-fastf1>=3.3.0
-streamlit>=1.37.0
-plotly>=5.22.0
-pandas>=2.0.0
-numpy>=1.24.0
-
-# Live mode (OpenF1) uses only the Python standard library (urllib), so it
-# intentionally adds no third-party HTTP dependency here.
+streamlit>=1.36
+streamlit-autorefresh>=1.0.1
+requests>=2.31
+pandas>=2.0
+numpy>=1.26
+plotly>=5.22
+fastf1>=3.6
