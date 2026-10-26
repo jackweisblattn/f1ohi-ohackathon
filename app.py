@@ -706,6 +706,7 @@ browser_drivers.sort(key=browser_driver_order)
 
 TEAM_LOGO_FILES = {
     "audi": "audi.svg",
+    "red-bull-racing": "red-bull.svg",
     "cadillac": "cadillac.svg",
     "alpine": "alpine.svg",
     "mclaren": "mclaren.svg",
@@ -723,6 +724,8 @@ TEAM_LOGO_FILES = {
 
 def logo_key_for_team(team):
     name = str(team or "").lower()
+    if "red bull" in name:
+        return "red-bull-racing"
     if "audi" in name:
         return "audi"
     if "cadillac" in name:
@@ -824,7 +827,7 @@ body.extended-timing .tower-row{font-size:12px;padding:8px 0}
 input[type=range]{flex:1;accent-color:#ef3340}.time{min-width:115px;text-align:right;color:#cbd2dc;font-variant-numeric:tabular-nums}
 .driver-detail{display:none;margin-top:12px;padding:14px;background:#151d28;border:1px solid #283241;border-radius:10px;color:#d7dee8;grid-template-columns:92px minmax(0,1fr);gap:14px;position:relative}
 .driver-detail.open{display:grid}.portrait{width:92px;height:110px;border-radius:9px;background:#273244;display:grid;place-items:center;overflow:hidden}.portrait img{width:100%;height:100%;object-fit:cover}.portrait-fallback{font-size:22px;font-weight:800;color:#d9e2ef}
-.driver-copy{min-width:0}.driver-identity{display:flex;align-items:center;gap:10px;margin:0 32px 10px 0}.driver-abbr{font-size:18px;font-weight:800}.driver-name{font-size:19px;font-weight:750;color:#fff}.driver-team{font-size:12px;color:#929dad;margin-top:2px}.driver-state{font-size:11px;margin-left:auto;padding:4px 7px;background:#202b39;border-radius:6px;color:#aab6c5}.close-detail{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#aab6c5;font-size:20px;cursor:pointer}.driver-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:7px}.metric{background:#1b2431;border-radius:7px;padding:7px 9px;min-width:0}.metric-label{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#8793a3}.metric-value{margin-top:3px;font-size:13px;font-weight:650;color:#eef2f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.driver-copy{min-width:0}.driver-identity{display:flex;align-items:center;gap:10px;margin:0 32px 10px 0}.driver-abbr{font-size:18px;font-weight:800}.driver-name{font-size:19px;font-weight:750;color:#fff}.driver-team{font-size:12px;color:#929dad;margin-top:2px}.driver-team-logo{width:62px;height:40px;object-fit:contain;padding:5px;border:1px solid #34445b;border-radius:8px;background:#0b1018;flex:0 0 auto}.driver-team-logo[hidden]{display:none}.driver-state{font-size:11px;margin-left:auto;padding:4px 7px;background:#202b39;border-radius:6px;color:#aab6c5}.close-detail{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#aab6c5;font-size:20px;cursor:pointer}.driver-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:7px}.metric{background:#1b2431;border-radius:7px;padding:7px 9px;min-width:0}.metric-label{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#8793a3}.metric-value{margin-top:3px;font-size:13px;font-weight:650;color:#eef2f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .muted{color:#929dad}.tip{font-size:12px;color:#8e99a8;margin:8px 0 0}
 .telemetry-panel{display:none;flex:1;min-height:0;margin:0;padding:12px;background:#111923;border:1px solid #283241;border-radius:10px;overflow-y:auto}.telemetry-title{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.telemetry-title h3{margin:0;color:#eef2f7;font-size:14px}.telemetry-title span{color:#929dad;font-size:11px}.telemetry-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:10px}.telemetry-stack{display:flex;flex-direction:column;gap:8px;padding-right:3px}.telemetry-chart{display:block;width:100%;height:150px;background:#0b1018;border-radius:8px;flex:0 0 150px}.telemetry-chart[hidden]{display:none!important}.telemetry-empty{padding:20px;text-align:center;color:#929dad;background:#151d28;border-radius:10px}
 body.telemetry-view .tower-panel{display:none}body.telemetry-view .telemetry-panel{display:block}
@@ -844,7 +847,7 @@ body.combined-view .telemetry-panel{display:block;flex:none;min-height:auto;marg
 <div id="detail" class="driver-detail" aria-live="polite">
   <div class="portrait"><img id="driver-photo" alt=""><span id="photo-fallback" class="portrait-fallback"></span></div>
   <div class="driver-copy"><button id="close-detail" class="close-detail" aria-label="Close driver details">×</button>
-    <div class="driver-identity"><span id="driver-abbr" class="driver-abbr"></span><div><div id="driver-name" class="driver-name"></div><div id="driver-team" class="driver-team"></div></div><span id="driver-state" class="driver-state"></span></div>
+    <div class="driver-identity"><img id="driver-team-logo" class="driver-team-logo" alt="" hidden><span id="driver-abbr" class="driver-abbr"></span><div><div id="driver-name" class="driver-name"></div><div id="driver-team" class="driver-team"></div></div><span id="driver-state" class="driver-state"></span></div>
     <div id="driver-stats" class="driver-stats"></div>
   </div>
 </div>
@@ -901,6 +904,7 @@ const driverSearch=document.getElementById("driver-search"),driverSearchOptions=
 const driverPhoto=document.getElementById("driver-photo"),photoFallback=document.getElementById("photo-fallback");
 const driverAbbr=document.getElementById("driver-abbr"),driverName=document.getElementById("driver-name");
 const driverTeam=document.getElementById("driver-team"),driverState=document.getElementById("driver-state");
+const driverTeamLogo=document.getElementById("driver-team-logo");
 const driverStats=document.getElementById("driver-stats");
 const telemetryDriver=document.getElementById("telemetry-driver"),telemetryTime=document.getElementById("telemetry-time");
 const telemetryMetrics=document.getElementById("telemetry-metrics"),telemetryEmpty=document.getElementById("telemetry-empty");
@@ -1578,6 +1582,9 @@ function renderDriverDetails(t,force=false){
   lastDetailSecond=second;detail.classList.add("open");
   driverAbbr.textContent=driver.abbr;driverAbbr.style.color=driver.color;
   driverName.textContent=driver.name;driverTeam.textContent=driver.team;
+  const teamLogo=data.teamLogos?.[driver.logoKey];
+  if(teamLogo){driverTeamLogo.hidden=false;if(driverTeamLogo.dataset.logoKey!==driver.logoKey){driverTeamLogo.src=teamLogo;driverTeamLogo.dataset.logoKey=driver.logoKey;}driverTeamLogo.alt=driver.team+" logo";}
+  else{driverTeamLogo.hidden=true;driverTeamLogo.removeAttribute("src");driverTeamLogo.dataset.logoKey="";}
   const out=driver.dnf&&driver.dnf.time!==null&&t>=driver.dnf.time;
   const dns=out&&/did not start|\bDNS\b/i.test(driver.dnf.status||"");
   driverState.textContent=dns?"DNS":out?"DNF · Lap "+(driver.dnf.lap??"—"):"On track";
