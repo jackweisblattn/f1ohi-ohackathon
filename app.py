@@ -1,4 +1,5 @@
 """Historical F1 telemetry replay powered by FastF1. Run with: streamlit run app.py"""
+# Inspired by Tom Shaw's F1 race replay visualization: https://www.youtube.com/watch?v=TiQEElXyY2w
 from pathlib import Path
 import base64
 import json
