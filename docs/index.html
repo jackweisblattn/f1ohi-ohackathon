@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e13">
+  <meta name="description" content="Trackside Replay turns historical Formula 1 timing and telemetry into an interactive race experience.">
+  <title>Trackside Replay — See the race in the data</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e13;
+      --panel: #121821;
+      --panel-2: #18212d;
+      --line: #293443;
+      --text: #f5f7fa;
+      --muted: #9aa7b7;
+      --red: #ff3948;
+      --purple: #bd77ff;
+      --mint: #31d6b2;
+      --max: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    .wrap { width: min(var(--max), calc(100% - 48px)); margin-inline: auto; }
+    .topbar { border-bottom: 1px solid rgba(255,255,255,.08); }
+    .nav { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 800; letter-spacing: -.03em; }
+    .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #374253; border-radius: 10px; background: #171e28; font-size: 18px; }
+    .nav-links { display: flex; align-items: center; gap: 26px; color: var(--muted); font-size: 14px; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { color: var(--text) !important; border: 1px solid #455366; border-radius: 999px; padding: 8px 14px; }
+    .hero { padding: 84px 0 74px; overflow: hidden; }
+    .hero-grid { display: grid; grid-template-columns: 1fr .92fr; align-items: center; gap: 60px; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--mint); font-size: 12px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; }
+    h1 { max-width: 660px; margin: 20px 0 18px; font-size: clamp(48px, 6vw, 78px); line-height: .99; letter-spacing: -.065em; }
+    h1 span { color: var(--red); }
+    .lead { max-width: 570px; margin: 0; color: #b5c0ce; font-size: 18px; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 30px; }
+    .button { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 48px; border: 1px solid transparent; border-radius: 10px; padding: 0 18px; font-weight: 750; text-decoration: none; transition: transform .18s ease, background .18s ease; }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary { background: var(--red); color: white; box-shadow: 0 10px 30px rgba(255,57,72,.18); }
+    .button-primary:hover { background: #ff5360; }
+    .button-secondary { border-color: #394657; background: #151c26; color: #e9eef5; }
+    .note { margin-top: 15px; color: #7f8b9b; font-size: 13px; }
+    .visual { min-height: 420px; position: relative; display: grid; place-items: center; }
+    .glow { position: absolute; width: 76%; aspect-ratio: 1; border-radius: 50%; background: rgba(189,119,255,.13); filter: blur(65px); }
+    .dash { position: relative; width: 100%; max-width: 520px; padding: 20px; overflow: hidden; border: 1px solid #344153; border-radius: 18px; background: linear-gradient(145deg, rgba(25,34,47,.98), rgba(14,18,26,.98)); box-shadow: 0 32px 90px rgba(0,0,0,.45); transform: rotate(1.5deg); }
+    .dash-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #c2ccda; font-size: 12px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .live-pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 9px; border: 1px solid #334452; border-radius: 999px; color: var(--mint); font-size: 10px; letter-spacing: .1em; }
+    .live-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+    .track { width: 100%; height: auto; margin: 12px 0 8px; }
+    .dash-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+    .dash-stat { padding: 11px 12px; border: 1px solid #2b3543; border-radius: 10px; background: rgba(24,33,45,.88); }
+    .dash-stat small { display: block; color: #77879a; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .dash-stat b { display: block; margin-top: 3px; color: #ecf0f5; font-size: 14px; }
+    .dash-stat .purple { color: var(--purple); }
+    .section { padding: 82px 0; border-top: 1px solid rgba(255,255,255,.07); }
+    .section-kicker { color: var(--red); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h2 { margin: 10px 0 14px; font-size: clamp(32px,4vw,48px); line-height: 1.08; letter-spacing: -.045em; }
+    .section-intro { max-width: 670px; color: var(--muted); font-size: 17px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-top: 34px; }
+    .feature { min-height: 210px; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+    .feature-icon { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 24px; border-radius: 11px; background: #202a38; color: var(--mint); font-size: 19px; }
+    .feature:nth-child(2) .feature-icon { color: var(--purple); }
+    .feature:nth-child(3) .feature-icon { color: #ffc35c; }
+    .feature:nth-child(4) .feature-icon { color: #ff7480; }
+    .feature h3 { margin: 0 0 7px; font-size: 17px; }
+    .feature p { margin: 0; color: var(--muted); font-size: 14px; }
+    .mission { display: grid; grid-template-columns: .7fr 1fr; gap: 64px; align-items: start; }
+    .mission-copy { color: #b2bdcb; font-size: 17px; }
+    .mission-copy p { margin-top: 0; }
+    .stack { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 22px; }
+    .tag { padding: 7px 11px; border: 1px solid #344051; border-radius: 999px; background: #131a23; color: #c9d3df; font-size: 12px; font-weight: 700; }
+    .data-note { display: flex; gap: 14px; align-items: flex-start; margin-top: 30px; padding: 18px 20px; border: 1px solid #394153; border-radius: 12px; background: #131922; color: #aab6c6; font-size: 14px; }
+    .data-note strong { color: var(--text); }
+    .data-note .info { color: var(--purple); font-size: 18px; }
+    .closing { padding: 68px 0 80px; text-align: center; background: radial-gradient(ellipse at 50% 100%, rgba(255,57,72,.12), transparent 55%); }
+    .closing p { max-width: 580px; margin: 0 auto 24px; color: var(--muted); }
+    footer { border-top: 1px solid rgba(255,255,255,.08); padding: 22px 0; color: #768394; font-size: 12px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 18px; align-items: center; }
+    .footer-inner a { color: #aab6c6; text-decoration: none; }
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+      .visual { min-height: 0; }
+      .feature-grid { grid-template-columns: repeat(2,1fr); }
+      .mission { grid-template-columns: 1fr; gap: 20px; }
+    }
+    @media (max-width: 560px) {
+      .wrap { width: min(var(--max), calc(100% - 30px)); }
+      .nav { min-height: 64px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      .hero { padding: 58px 0 48px; }
+      .lead { font-size: 16px; }
+      .visual { margin-inline: -3px; }
+      .dash { padding: 13px; border-radius: 14px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature { min-height: auto; }
+      .section { padding: 62px 0; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav wrap" aria-label="Main navigation">
+      <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">🏁</span><span>TRACKSIDE REPLAY</span></a>
+      <div class="nav-links">
+        <a href="#features">What it does</a>
+        <a href="#about">About</a>
+        <a class="nav-cta" href="https://github.com/jackweisblattn/f1ohi-ohackathon" target="_blank" rel="noreferrer">View on GitHub ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-grid wrap">
+        <div>
+          <div class="eyebrow">Formula 1 data, in motion</div>
+          <h1>See the race<br><span>between the lines.</span></h1>
+          <p class="lead">Trackside Replay turns historical F1 timing and telemetry into a visual experience you can explore lap by lap.</p>
+          <div class="actions">
+            <a class="button button-primary" href="https://github.com/jackweisblattn/f1ohi-ohackathon" target="_blank" rel="noreferrer">Explore the project <span aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#features">See what’s inside <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="note">A motorsport data project built with Python, Streamlit, Plotly, and FastF1.</p>
+        </div>
+
+        <div class="visual" aria-label="Illustration of a race replay dashboard">
+          <div class="glow"></div>
+          <div class="dash">
+            <div class="dash-head"><span>Trackside · Session replay</span><span class="live-pill">RECORDED DATA</span></div>
+            <svg class="track" viewBox="0 0 620 310" role="img" aria-label="Illustrative circuit map with cars moving around a track">
+              <defs>
+                <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <path d="M89 246 C46 220 51 183 91 169 C126 157 104 121 139 102 C171 83 199 106 223 78 C251 45 293 47 311 76 C328 105 300 126 332 144 C366 164 410 116 432 87 C457 54 508 60 521 93 C534 126 497 150 511 178 C526 210 491 236 454 225 C421 215 394 252 358 249 C324 245 307 272 269 261 C231 250 222 226 184 236 C148 247 123 267 89 246Z" fill="none" stroke="#505c6e" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M89 246 C46 220 51 183 91 169 C126 157 104 121 139 102 C171 83 199 106 223 78 C251 45 293 47 311 76 C328 105 300 126 332 144 C366 164 410 116 432 87" fill="none" stroke="#bd77ff" stroke-width="6" stroke-linecap="round" filter="url(#soft-glow)"/>
+              <g font-family="system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">
+                <circle cx="139" cy="102" r="9" fill="#ff3948" stroke="#fff" stroke-width="2"/><text x="139" y="88" fill="#fff">HAM</text>
+                <circle cx="223" cy="78" r="9" fill="#31d6b2" stroke="#fff" stroke-width="2"/><text x="223" y="64" fill="#fff">RUS</text>
+                <circle cx="332" cy="144" r="9" fill="#ff9c38" stroke="#fff" stroke-width="2"/><text x="332" y="130" fill="#fff">NOR</text>
+                <circle cx="454" cy="225" r="9" fill="#6ea5ff" stroke="#fff" stroke-width="2"/><text x="454" y="211" fill="#fff">VER</text>
+                <circle cx="184" cy="236" r="9" fill="#ff3948" stroke="#fff" stroke-width="2"/><text x="184" y="222" fill="#fff">LEC</text>
+              </g>
+              <circle cx="311" cy="76" r="16" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+            </svg>
+            <div class="dash-stats">
+              <div class="dash-stat"><small>Explore</small><b>Lap by lap</b></div>
+              <div class="dash-stat"><small>Compare</small><b class="purple">Driver telemetry</b></div>
+              <div class="dash-stat"><small>Follow</small><b>Race order</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="wrap">
+        <div class="section-kicker">Inside the replay</div>
+        <h2>More than a finishing order.</h2>
+        <p class="section-intro">Explore the details that shape a session, from where each car is on track to how its pace changes over time.</p>
+        <div class="feature-grid">
+          <article class="feature"><div class="feature-icon" aria-hidden="true">⌁</div><h3>Animated circuit map</h3><p>Follow recorded car positions as drivers move around the circuit during a replay.</p></article>
+          <article class="feature"><div class="feature-icon" aria-hidden="true">◷</div><h3>Timing tower</h3><p>Track session order, gaps, lap times, tyre compounds, and completed laps.</p></article>
+          <article class="feature"><div class="feature-icon" aria-hidden="true">〰</div><h3>Driver telemetry</h3><p>Inspect recorded car data and compare how a driver's performance changes through a lap.</p></article>
+          <article class="feature"><div class="feature-icon" aria-hidden="true">▥</div><h3>Season context</h3><p>Explore championship standings and how points accumulate across a season.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="mission wrap">
+        <div>
+          <div class="section-kicker">Why I built it</div>
+          <h2>Make the data easier to read.</h2>
+        </div>
+        <div class="mission-copy">
+          <p>Motorsport produces rich timing and telemetry data, but raw tables can be hard to interpret. Trackside Replay brings those details together in an interactive view for fans and aspiring motorsport engineers.</p>
+          <p>This project began as a hackathon build and grew into a way to explore race strategy, driver pace, and the story behind each lap.</p>
+          <div class="stack" aria-label="Technology used"><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Plotly</span><span class="tag">FastF1</span></div>
+          <div class="data-note"><span class="info" aria-hidden="true">ⓘ</span><span><strong>Historical data, clearly labeled.</strong> The replay uses recorded session data through FastF1. It is not a live timing service and does not include broadcast footage.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="wrap">
+        <div class="section-kicker">Take a closer look</div>
+        <h2>Follow the data around the track.</h2>
+        <p>Explore the code, see how the project is built, and follow along as Trackside Replay continues to improve.</p>
+        <a class="button button-primary" href="https://github.com/jackweisblattn/f1ohi-ohackathon" target="_blank" rel="noreferrer">Open the GitHub repository <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="footer-inner wrap"><span>© 2026 Trackside Replay · Built by Jack Weisblatt</span><a href="https://github.com/jackweisblattn/f1ohi-ohackathon" target="_blank" rel="noreferrer">Source on GitHub ↗</a></div>
+  </footer>
+</body>
+</html>
